@@ -2,6 +2,39 @@ import secrets
 import random
 import string
 
+class BoardManager():
+
+    active_boards = {}
+
+    @staticmethod
+    def start_board(board):
+        BoardManager.active_boards[board.get_id()] = board
+ 
+    @staticmethod
+    def end_board(_id):
+        del BoardManager.active_boards[_id]
+
+    @staticmethod
+    def get_time_remaining():
+        return 10000
+
+    @staticmethod
+    def calculate_points(word):
+        return 10
+    
+    @staticmethod
+    def play_board(index, word):
+        try:
+            selected_board = BoardManager.active_boards[index].get_json()
+            selected_board['time_left'] = BoardManager.get_time_remaining()
+            selected_board['points'] = BoardManager.calculate_points(word)
+            return selected_board
+        except KeyError:
+            return None
+
+
+
+
 class Board():
     id_counter = 0
     default_board = 'test_board.txt'
@@ -16,13 +49,16 @@ class Board():
             self.board_string = self.random_board(board_size)
 
         self.board = self.format_board(self.board_string)
-        self.id = self.get_id()
+        self.id = self.assign_id()
         self.token = self.generate_token()
         self.duration = duration
 
-    def get_id(self):
+    def assign_id(self):
         Board.id_counter += 1
         return Board.id_counter
+
+    def get_id(self):
+        return self.id
 
     def format_board(self, board):
         board = board.upper()

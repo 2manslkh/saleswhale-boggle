@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request, Response
 from jsonschema import validate, ValidationError # to validate post data
 import json
 import re
-from Board import Board
+from Board import Board, BoardManager
 
 app = Flask(__name__)
 VALID_BOARD_LEN = 16
@@ -27,6 +27,14 @@ def new_game():
 
     Response Code:
         201: Success
+        returns: 
+        {
+            "id": 1,
+            "token": "9dda26ec7e476fb337cb158e7d31ac6c",
+            "duration": 12345,
+            "board": "A, C, E, D, L, U, G, *, E, *, H, T, G, A, F, K"
+        }
+        400: Error
     """
     # Schema for post data
     schema = {
@@ -67,14 +75,77 @@ def new_game():
     
     # Instantiate a boggle board
     board = Board(duration, random, board_string, VALID_BOARD_LEN)
+    BoardManager.start_board(board)
+
     print(board.get_json())
     # Return boggle board in json format with 201 Success Code
     return Response(json.dumps(board.get_json()),mimetype='application/json',status=201)
 
 
 @app.route("/games/<id>",methods=["GET","PUT"])
-def game():
-    return("hello world")
+def game(id):
+    """
+    PUT:
+    Play a word in the existing boggle board
+
+    Parameters:
+        id (int) (required): The ID of the game
+        token (string) (required): The token for authenticating the game
+        word (string) (required): The word that can be used to play the game
+
+    Responses:
+        200: Success
+        returns: 
+        {
+            "id": 1,
+            "token": "9dda26ec7e476fb337cb158e7d31ac6c",
+            "duration": 12345,
+            "board": "A, C, E, D, L, U, G, *, E, *, H, T, G, A, F, K",
+            "time_left": 10000,
+            "points": 10
+        }
+        400: Error
+    """
+    
+    schema = {
+        "type": "object",
+        "properties": {
+            "token": {"type": "string"},
+            "word": {"type": "string"},
+        },
+        "required": ["token", "word"],
+    }
+
+    # Get Arguments
+    data = request.json
+    # data = {}
+    # data['board_id'] = request.args.get("id")
+    # data['token'] = request.args.get("token")
+    word = data['word'].upper()
+
+    # Check if incoming POST data is valid
+    try:
+        validate(instance=data, schema=schema)
+    except ValidationError as error:
+    # Return to client the error
+        return Response(str(error), status=400)
+
+    # Check if board id exists
+    board = BoardManager.play_board(int(id), word)
+    if board is None:
+        return Response("Board does not exist!", status=400)
+
+    # Check if token is valid
+    if board['token'] != data['token']:
+        return Response("Invalid Token", status=401)
+
+    # Check for invalid Characters
+    invalid_characters = r"[^a-zA-Z]"
+    if re.search(invalid_characters, data['word']) is not None:
+        return Response("Invalid Character Detected!", status=400)
+
+    return board
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
