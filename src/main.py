@@ -3,6 +3,7 @@ from jsonschema import validate, ValidationError # to validate post data
 import json
 import re
 from Board import Board, BoardManager
+import datetime
 
 app = Flask(__name__)
 VALID_BOARD_LEN = 16
@@ -54,12 +55,12 @@ def new_game():
         validate(instance=post_data, schema=schema)
     except ValidationError as error:
     # Return to client the error
-        return Response(str(error), status=400)
+        return {'message':str(error)}, 400
     try:
         board_string = post_data['board']
     except KeyError:
         board_string = load_default_board()
-        print(board_string)
+        # print(board_string)
 
     random = post_data['random']
     duration = post_data['duration']
@@ -67,11 +68,11 @@ def new_game():
     # Insert Regex Expression Here
     invalid_characters = r"[^a-zA-Z\*]" # All non lowercase and uppercase alphabets + *
     board_string = re.sub(invalid_characters,"", board_string)
-    print(board_string)
+    # print(board_string)
 
     # Check if length of board is correct
     if len(board_string) != VALID_BOARD_LEN and random is False:
-        return Response(f"Invalid Board length! {board_string} ({len(board_string)} != {VALID_BOARD_LEN}) Calculated after removing invalid characters Regex: [^a-zA-Z\*]", status=400)
+        return json.dumps({'message': f"Invalid Board length! {board_string} ({len(board_string)} != {VALID_BOARD_LEN}) Calculated after removing invalid characters Regex: [^a-zA-Z\*]"}), 400
     
     # Instantiate a boggle board
     board = Board(duration, random, board_string, VALID_BOARD_LEN)
@@ -82,7 +83,8 @@ def new_game():
     del output['time_left']
 
     # Return boggle board in json format with 201 Success Code
-    return Response(json.dumps(output),mimetype='application/json',status=201)
+    print(output)
+    return json.dumps(output), 201
 
 
 @app.route("/games/<id>",methods=["GET","PUT"])
@@ -133,32 +135,42 @@ def game(id):
             validate(instance=data, schema=schema)
         except ValidationError as error:
         # Return to client the error
-            return Response(str(error), status=400)
+            return json.dumps({'message': str(error)}), 400
 
         # Check if board id exists
         board = BoardManager.get_board(int(id))
         if board is None:
-            return Response("Board does not exist!", status=400)
+            return json.dumps({'message':"Board does not exist!"}), 404
 
         # Check if token is valid
         if board.get_token() != data['token']:
-            return Response("Invalid Token", status=401)
+            return json.dumps({'message':"Invalid Token"}), 401
+
+        # Check if game expired
+        if (datetime.datetime.now() - board.get_start_time()).total_seconds() > board.get_duration():
+            return json.dumps({'message':"Game Expired!"}), 400
 
         # Check for invalid Characters
         invalid_characters = r"[^a-zA-Z]"
         if re.search(invalid_characters, data['word']) is not None:
-            return Response("Invalid Character Detected!", status=400)
+            return json.dumps({'message':"Invalid Character Detected!"}), 400
+
+        # Check if word is valid
+        if word.lower() not in BoardManager.valid_words:
+            return json.dumps({'message':"Invalid Word"}), 401
 
         # Play word
         BoardManager.play_board(int(id), word)
+        output = board.get_json()
 
-        return Response(json.dumps(board.get_json()), status=200)
+        return json.dumps(output), 200
 
     elif request.method == "GET":
         board = BoardManager.get_board(int(id))
         if board is None:
-            return Response("Board does not exist!", status=400)
-        return Response(json.dumps(board.get_json()), status=200)
+            return {'message':"Board does not exist!"}, 404
+        output = board.get_json()
+        return json.dumps(output), 200
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True)
+    app.run(host="0.0.0.0",port=5000,threaded=False)

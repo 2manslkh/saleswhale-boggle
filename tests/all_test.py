@@ -9,15 +9,13 @@ from flask import jsonify
 BASE_URL = "http://localhost:5000/"
 
 class BasicTests(unittest.TestCase):
-    
+
     def test_1_start_game_random(self):
         payload = {
             'duration':1000,
             'random':True,
         }
         response = requests.post(BASE_URL + "games",json=payload)
-        print(response.status_code)
-        print(response.json())
         self.assertEqual(response.status_code, 201)
 
     def test_2_start_game_default(self):
@@ -74,51 +72,51 @@ class BasicTests(unittest.TestCase):
 
     def test_5_put_game(self):
         payload = {
-            'token':"f017edbf5398943a8539fc314cd10635", # To change
+            'token':"6679bd8553db4ccb0c62c6f9d775fcdc", # To change
             'word':"cat"
         }
-        id = 1
-        response = requests.put(BASE_URL + f"games/{id}", json=payload)
+        _id = 1
+        response = requests.put(BASE_URL + f"games/{_id}", json=payload)
         print(response.status_code)
         print(response.text)
         self.assertEqual(response.status_code, 200)
 
     def test_6_put_game_invalid_id(self):
         payload = {
-            'token':"f017edbf5398943a8539fc314cd10635", # To change
+            'token':"6679bd8553db4ccb0c62c6f9d775fcdc", # To change
             'word':"cat"
         }
-        id = 9
-        response = requests.put(BASE_URL + f"games/{id}", json=payload)
+        _id = -1
+        response = requests.put(BASE_URL + f"games/{_id}", json=payload)
         print(response.status_code)
-        print(response.text)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 404)
 
     def test_7_put_game_invalid_token(self):
         payload = {
             'token':"zzz",
             'word':"cat"
         }
-        id = 1
-        response = requests.put(BASE_URL + f"games/{id}", json=payload)
+        _id = 1
+        response = requests.put(BASE_URL + f"games/{_id}", json=payload)
         print(response.status_code)
         print(response.text)
         self.assertEqual(response.status_code, 401)
 
     def test_8_put_game_invalid_word(self):
+
         payload = {
-            'token':"f017edbf5398943a8539fc314cd10635", # To change
+            'token':"6679bd8553db4ccb0c62c6f9d775fcdc", # To change
             'word':"!!@#!@#!#!"
         }
-        id = 1
-        response = requests.put(BASE_URL + f"games/{id}", json=payload)
+        _id = 1
+        response = requests.put(BASE_URL + f"games/{_id}", json=payload)
         print(response.status_code)
         print(response.text)
         self.assertEqual(response.status_code, 400)
 
     def test_9_get_game_board(self):
-        id = 1
-        response = requests.get(BASE_URL + f"games/{id}")
+        _id = 1
+        response = requests.get(BASE_URL + f"games/{_id}")
         print(response.status_code)
         print(response.text)
         self.assertEqual(response.status_code, 200)

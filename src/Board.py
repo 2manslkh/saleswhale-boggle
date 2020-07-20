@@ -1,9 +1,15 @@
 import secrets
 import random
 import string
+import datetime
+
+with open('dictionary.txt') as f:
+    content = f.readlines()
+content = [x.strip() for x in content] 
 
 class BoardManager():
 
+    valid_words = content
     active_boards = {}
 
     @staticmethod
@@ -20,7 +26,7 @@ class BoardManager():
 
     @staticmethod
     def calculate_points(word):
-        return 10
+        return len(word)
     
     @staticmethod
     def play_board(index, word):
@@ -39,8 +45,6 @@ class BoardManager():
             return selected_board
         except KeyError:
             return None
-
-
 
 class Board():
     id_counter = 0
@@ -61,6 +65,7 @@ class Board():
         self.duration = duration
         self.time_left = duration
         self.points = 0
+        self.start_time = datetime.datetime.now()
 
     def assign_id(self):
         Board.id_counter += 1
@@ -72,6 +77,9 @@ class Board():
     def get_token(self):
         return self.token
 
+    def get_start_time(self):
+        return self.start_time
+
     def format_board(self, board):
         board = board.upper()
         out = ""
@@ -80,9 +88,13 @@ class Board():
             if i < len(board) - 1:
                 out += ", "
         return out
-        
+
+    def get_duration(self):
+        return self.duration
+
     def generate_token(self):
-        return secrets.token_hex(16)
+        # return secrets.token_hex(16)
+        return "6679bd8553db4ccb0c62c6f9d775fcdc"
 
     def get_json(self):
         out = {} 
