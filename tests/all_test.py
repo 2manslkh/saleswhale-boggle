@@ -74,7 +74,7 @@ class BasicTests(unittest.TestCase):
 
     def test_5_put_game(self):
         payload = {
-            'token':"df0e71ec5d55f5ab5652ca394d523100", # To change
+            'token':"f017edbf5398943a8539fc314cd10635", # To change
             'word':"cat"
         }
         id = 1
@@ -85,7 +85,7 @@ class BasicTests(unittest.TestCase):
 
     def test_6_put_game_invalid_id(self):
         payload = {
-            'token':"df0e71ec5d55f5ab5652ca394d523100", # To change
+            'token':"f017edbf5398943a8539fc314cd10635", # To change
             'word':"cat"
         }
         id = 9
@@ -107,11 +107,18 @@ class BasicTests(unittest.TestCase):
 
     def test_8_put_game_invalid_word(self):
         payload = {
-            'token':"df0e71ec5d55f5ab5652ca394d523100", # To change
-            'word':"cat"
+            'token':"f017edbf5398943a8539fc314cd10635", # To change
+            'word':"!!@#!@#!#!"
         }
         id = 1
         response = requests.put(BASE_URL + f"games/{id}", json=payload)
         print(response.status_code)
         print(response.text)
         self.assertEqual(response.status_code, 400)
+
+    def test_9_get_game_board(self):
+        id = 1
+        response = requests.get(BASE_URL + f"games/{id}")
+        print(response.status_code)
+        print(response.text)
+        self.assertEqual(response.status_code, 200)

@@ -25,13 +25,20 @@ class BoardManager():
     @staticmethod
     def play_board(index, word):
         try:
-            selected_board = BoardManager.active_boards[index].get_json()
-            selected_board['time_left'] = BoardManager.get_time_remaining()
-            selected_board['points'] = BoardManager.calculate_points(word)
+            selected_board = BoardManager.active_boards[index]
+            selected_board.add_points(BoardManager.calculate_points(word))
+            selected_board.update_time_left()
             return selected_board
         except KeyError:
             return None
 
+    @staticmethod
+    def get_board(index):
+        try:
+            selected_board = BoardManager.active_boards[index]
+            return selected_board
+        except KeyError:
+            return None
 
 
 
@@ -52,6 +59,8 @@ class Board():
         self.id = self.assign_id()
         self.token = self.generate_token()
         self.duration = duration
+        self.time_left = duration
+        self.points = 0
 
     def assign_id(self):
         Board.id_counter += 1
@@ -59,6 +68,9 @@ class Board():
 
     def get_id(self):
         return self.id
+
+    def get_token(self):
+        return self.token
 
     def format_board(self, board):
         board = board.upper()
@@ -78,6 +90,8 @@ class Board():
         out['token'] = self.token
         out['duration'] = self.duration
         out['board'] = self.board
+        out['points'] = self.points
+        out['time_left'] = self.time_left
         return out
 
     def random_board(self,board_size):
@@ -90,3 +104,9 @@ class Board():
         with open(Board.default_board,"r") as f:
             data = f.read()
         return data
+
+    def add_points(self, points):
+        self.points += points
+
+    def update_time_left(self):
+        self.time_left 

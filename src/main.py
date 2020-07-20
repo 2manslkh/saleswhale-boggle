@@ -76,10 +76,13 @@ def new_game():
     # Instantiate a boggle board
     board = Board(duration, random, board_string, VALID_BOARD_LEN)
     BoardManager.start_board(board)
+    
+    output = board.get_json()
+    del output['points']
+    del output['time_left']
 
-    print(board.get_json())
     # Return boggle board in json format with 201 Success Code
-    return Response(json.dumps(board.get_json()),mimetype='application/json',status=201)
+    return Response(json.dumps(output),mimetype='application/json',status=201)
 
 
 @app.route("/games/<id>",methods=["GET","PUT"])
@@ -118,34 +121,44 @@ def game(id):
 
     # Get Arguments
     data = request.json
-    # data = {}
-    # data['board_id'] = request.args.get("id")
-    # data['token'] = request.args.get("token")
-    word = data['word'].upper()
 
-    # Check if incoming POST data is valid
-    try:
-        validate(instance=data, schema=schema)
-    except ValidationError as error:
-    # Return to client the error
-        return Response(str(error), status=400)
+    if request.method == "PUT":
+        # data = {}
+        # data['board_id'] = request.args.get("id")
+        # data['token'] = request.args.get("token")
+        word = data['word'].upper()
 
-    # Check if board id exists
-    board = BoardManager.play_board(int(id), word)
-    if board is None:
-        return Response("Board does not exist!", status=400)
+        # Check if incoming POST data is valid
+        try:
+            validate(instance=data, schema=schema)
+        except ValidationError as error:
+        # Return to client the error
+            return Response(str(error), status=400)
 
-    # Check if token is valid
-    if board['token'] != data['token']:
-        return Response("Invalid Token", status=401)
+        # Check if board id exists
+        board = BoardManager.get_board(int(id))
+        if board is None:
+            return Response("Board does not exist!", status=400)
 
-    # Check for invalid Characters
-    invalid_characters = r"[^a-zA-Z]"
-    if re.search(invalid_characters, data['word']) is not None:
-        return Response("Invalid Character Detected!", status=400)
+        # Check if token is valid
+        if board.get_token() != data['token']:
+            return Response("Invalid Token", status=401)
 
-    return board
+        # Check for invalid Characters
+        invalid_characters = r"[^a-zA-Z]"
+        if re.search(invalid_characters, data['word']) is not None:
+            return Response("Invalid Character Detected!", status=400)
 
+        # Play word
+        BoardManager.play_board(int(id), word)
+
+        return Response(json.dumps(board.get_json()), status=200)
+
+    elif request.method == "GET":
+        board = BoardManager.get_board(int(id))
+        if board is None:
+            return Response("Board does not exist!", status=400)
+        return Response(json.dumps(board.get_json()), status=200)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
