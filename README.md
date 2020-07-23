@@ -172,3 +172,7 @@ index = 0
 4. If the adjacent character matches with the next character in the word (or is a '*' and is not '-'), "move" to that character, update the board by replacing the old position with a '-' such that the algorithm knows that that character was used.
 5. Increase the index by 1
 6. If index = length of input word, it means that the word can be found on the boggle board and we return True.
+
+## Features that should also be implemented
+
+- Retain a list of valid words that have already been played. If the word is played again, award zero points
