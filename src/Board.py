@@ -53,8 +53,8 @@ class BoardManager:
                 return True
 
         def check_board(board, start_position, word, word_index):
-            print(word_index, start_position, word[:word_index])
-
+            print(word_index, start_position)
+            print(board)
             i = start_position[0]
             j = start_position[1]
             word_index += 1
@@ -64,102 +64,22 @@ class BoardManager:
                 board[i][j] = "-"
                 print(word_index, word, board)
                 return True
+            
+            # List of all possible moves in 8 directions
+            possible_moves = [(i-1,j),(i+1,j),(i,j+1),(i,j-1),(i-1,j-1),(i-1,j+1),(i+1,j+1),(i+1,j-1)]
+            
+            # Loop through possible moves
+            for k in range(len(possible_moves)):
+              next_i = possible_moves[k][0]
+              next_j = possible_moves[k][1]
 
-            # Check letter above
-            next_i = i - 1
-            next_j = j
-
-            if not is_out_of_bounds(next_i, next_j):
-                if (
-                    word[word_index] == board[next_i][next_j]
-                    or board[next_i][next_j] == "*"
-                ) and board[next_i][next_j] != "-":
-                    board[i][j] = "-"
-                    return check_board(board, (next_i, next_j), word, word_index)
-
-            # Check letter below
-            next_i = i + 1
-            next_j = j
-
-            if not is_out_of_bounds(next_i, next_j):
-                if (
-                    board[next_i][next_j] == word[word_index]
-                    or board[next_i][next_j] == "*"
-                ) and board[next_i][next_j] != "-":
-                    board[i][j] = "-"
-                    return check_board(board, (next_i, next_j), word, word_index)
-
-            # Check letter left
-            next_i = i
-            next_j = j - 1
-
-            if not is_out_of_bounds(next_i, next_j):
-                if (
-                    word[word_index] == board[next_i][next_j]
-                    or board[next_i][next_j] == "*"
-                ) and board[next_i][next_j] != "-":
-                    board[i][j] = "-"
-                    return check_board(board, (next_i, next_j), word, word_index)
-
-            # Check letter right
-            next_i = i
-            next_j = j + 1
-
-            if not is_out_of_bounds(next_i, next_j):
-                if (
-                    word[word_index] == board[next_i][next_j]
-                    or board[next_i][next_j] == "*"
-                ) and board[next_i][next_j] != "-":
-                    board[i][j] = "-"
-                    return check_board(board, (next_i, next_j), word, word_index)
-
-            # Check letter upper-right
-            next_i = i - 1
-            next_j = j + 1
-
-            if not is_out_of_bounds(next_i, next_j):
-                if (
-                    word[word_index] == board[next_i][next_j]
-                    or board[next_i][next_j] == "*"
-                ) and board[next_i][next_j] != "-":
-                    board[i][j] = "-"
-                    return check_board(board, (next_i, next_j), word, word_index)
-
-            # Check letter upper-left
-            next_i = i - 1
-            next_j = j - 1
-
-            if not is_out_of_bounds(next_i, next_j):
-                if (
-                    word[word_index] == board[next_i][next_j]
-                    or board[next_i][next_j] == "*"
-                ) and board[next_i][next_j] != "-":
-                    board[i][j] = "-"
-                    return check_board(board, (next_i, next_j), word, word_index)
-
-            # Check letter lower-right
-            next_i = i + 1
-            next_j = j + 1
-
-            if not is_out_of_bounds(next_i, next_j):
-                if (
-                    word[word_index] == board[next_i][next_j]
-                    or board[next_i][next_j] == "*"
-                ) and board[next_i][next_j] != "-":
-                    board[i][j] = "-"
-                    return check_board(board, (next_i, next_j), word, word_index)
-
-            # Check letter lower-left
-            next_i = i + 1
-            next_j = j - 1
-
-            if not is_out_of_bounds(next_i, next_j):
-                if (
-                    word[word_index] == board[next_i][next_j]
-                    or board[next_i][next_j] == "*"
-                ) and board[next_i][next_j] != "-":
-                    board[i][j] = "-"
-                    return check_board(board, (next_i, next_j), word, word_index)
+              if not is_out_of_bounds(next_i, next_j):
+                  if (
+                      word[word_index] == board[next_i][next_j]
+                      or board[next_i][next_j] == "*"
+                  ) and board[next_i][next_j] != "-":
+                      board[i][j] = "-"
+                      return check_board(board, (next_i, next_j), word, word_index)
 
             # # If all cases fail, return false
             return False

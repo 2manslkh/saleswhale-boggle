@@ -75,7 +75,14 @@ def new_game():
 
     # Check if length of board is correct
     if len(board_string) != VALID_BOARD_LEN and random is False:
-        return json.dumps({"message": f"Invalid Board length! {board_string} ({len(board_string)} != {VALID_BOARD_LEN}) Calculated after removing invalid characters Regex: [^a-zA-Z\*]"}),400
+        return (
+            json.dumps(
+                {
+                    "message": f"Invalid Board length! {board_string} ({len(board_string)} != {VALID_BOARD_LEN}) Calculated after removing invalid characters Regex: [^a-zA-Z\*]"
+                }
+            ),
+            400,
+        )
 
     # Instantiate a boggle board
     board = Board(duration, random, board_string, VALID_BOARD_LEN)
